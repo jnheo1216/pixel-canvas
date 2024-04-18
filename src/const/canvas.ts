@@ -1,7 +1,7 @@
 /** pixel size */
-export const PIXEL_SIZE = 10;
+export const PIXEL_SIZE = 10; // TODO: user can change pixel size and canvas size
 
-/** pixel size */
+/** canvas size */
 export const CANVAS_SIZE = 80;
 
 /** color set */

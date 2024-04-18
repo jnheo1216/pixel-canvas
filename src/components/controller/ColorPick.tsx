@@ -20,6 +20,8 @@ export default function ColorPick({
     setSelectedIndex(index);
   };
 
+  // TODO: user can change another color set
+  // TODO: user can add another color set
   return (
     <div>
       <div className="w-10 h-10 m-5" style={{ backgroundColor: selectedColor }}></div>

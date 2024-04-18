@@ -8,5 +8,6 @@ export default function AvailableClickRatioSlider({
   availableClickRatio: number;
   setAvailableClickRatio: React.Dispatch<React.SetStateAction<number>>;
 }) {
+  // TODO: user can setting available click ratio in pixel
   return <></>;
 }

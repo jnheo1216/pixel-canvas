@@ -167,5 +167,6 @@ const stackDrawLog = (
   ) {
     return;
   }
+  // TODO: log counts need limit
   setLog((prevItems) => [...prevItems, { x: pixelX, y: pixelY, beforeColorCode: hexColor }]);
 };

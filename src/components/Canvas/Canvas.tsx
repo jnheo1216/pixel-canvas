@@ -12,7 +12,7 @@ export default function Canvas() {
   /** available click area ratio (0.02 ~ 0.2) */
   const [availableClickRatio, setAvailableClickRatio] = useState<number>(0.12);
 
-  // TODO: DrawingLayer를 여러겹으로 구조 바꾸기
+  // TODO: DrawingLayer를 여러겹으로 구조 개선 예정
   return (
     <>
       <section className="flex min-h-screen items-center justify-evenly p-24">
