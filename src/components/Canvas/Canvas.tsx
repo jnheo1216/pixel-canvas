@@ -9,13 +9,13 @@ import AvailableClickRatioSlider from '../controller/AvailableClickRatioSlider';
 export default function Canvas() {
   /** selected color */
   const [selectedColor, setSelectedColor] = useState<string>('#CECECE');
-  /** available click area ratio (0.02 ~ 0.2) */
+  /** available click area ratio (0.02 ~ 0.4) */
   const [availableClickRatio, setAvailableClickRatio] = useState<number>(0.12);
 
   // TODO: DrawingLayer를 여러겹으로 구조 개선 예정
   return (
     <>
-      <section className="flex min-h-screen items-center justify-evenly p-24">
+      <section className="flex items-center justify-evenly p-24">
         <ColorPick selectedColor={selectedColor} setSelectedColor={setSelectedColor} />
         <DrawingLayer selectedColor={selectedColor} availableClickRatio={availableClickRatio} />
       </section>
