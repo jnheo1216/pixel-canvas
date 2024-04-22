@@ -24,6 +24,7 @@ export default function DrawingLayer({
 
   /** TODO: 나중에 픽셀 단위가 아니라 행동 단위로 저장 및 undo필요 */
   const [behaivior, setBehaivior] = useState<Behavior[]>([]);
+  const [redo, setRedo] = useState<Behavior[]>([]);
   /** pen on / off */
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
@@ -46,7 +47,10 @@ export default function DrawingLayer({
       event.clientX - rect.left,
       event.clientY - rect.top
     );
-    isDrawed && stackDrawLog(pixelX, pixelY, hexColor, behaivior, setBehaivior);
+    if (isDrawed) {
+      stackDrawLog(pixelX, pixelY, hexColor, behaivior, setBehaivior);
+      setRedo([]);
+    }
   };
 
   const handleCanvasClick = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -60,7 +64,10 @@ export default function DrawingLayer({
       event.clientX - rect.left,
       event.clientY - rect.top
     );
-    isDrawed && stackDrawLog(pixelX, pixelY, hexColor, behaivior, setBehaivior);
+    if (isDrawed) {
+      stackDrawLog(pixelX, pixelY, hexColor, behaivior, setBehaivior);
+      setRedo([]);
+    }
   };
 
   const handleUndo = useCallback(() => {
@@ -70,13 +77,44 @@ export default function DrawingLayer({
     const undoPixel = behaiviorList.pop();
     if (undoPixel && undoPixel.beforeColorCode) {
       context.fillStyle = undoPixel.beforeColorCode;
+      const pixelData = context.getImageData(undoPixel.x, undoPixel.y, 1, 1).data;
+      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+      undoPixel.beforeColorCode = hexColor;
       context.fillRect(undoPixel.x, undoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
       setBehaivior(behaiviorList);
+      setRedo([...redo, undoPixel]);
     } else if (undoPixel && !undoPixel.beforeColorCode) {
+      const pixelData = context.getImageData(undoPixel.x, undoPixel.y, 1, 1).data;
+      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+      undoPixel.beforeColorCode = hexColor;
       context.clearRect(undoPixel.x, undoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
       setBehaivior(behaiviorList);
+      setRedo([...redo, undoPixel]);
     }
-  }, [behaivior, context]);
+  }, [behaivior, redo, context]);
+
+  const handleRedo = useCallback(() => {
+    if (!context) return;
+
+    const redoList = [...redo];
+    const redoPixel = redoList.pop();
+    if (redoPixel && redoPixel.beforeColorCode) {
+      context.fillStyle = redoPixel.beforeColorCode;
+      const pixelData = context.getImageData(redoPixel.x, redoPixel.y, 1, 1).data;
+      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+      redoPixel.beforeColorCode = hexColor;
+      context.fillRect(redoPixel.x, redoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
+      setRedo(redoList);
+      setBehaivior([...behaivior, redoPixel]);
+    } else if (redoPixel && !redoPixel.beforeColorCode) {
+      const pixelData = context.getImageData(redoPixel.x, redoPixel.y, 1, 1).data;
+      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+      redoPixel.beforeColorCode = hexColor;
+      context.clearRect(redoPixel.x, redoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
+      setRedo(redoList);
+      setBehaivior([...behaivior, redoPixel]);
+    }
+  }, [redo, behaivior, context]);
 
   useEffect(() => {
     const ctrlZ = function (event: KeyboardEvent) {
@@ -114,6 +152,14 @@ export default function DrawingLayer({
         onClick={handleUndo}
       >
         Undo
+      </button>
+      <button
+        type="button"
+        className={`border ml-2 ${redo.length < 1 ? 'text-slate-300' : 'text-black'}`}
+        disabled={redo.length < 1}
+        onClick={handleRedo}
+      >
+        Redo
       </button>
     </div>
   );
