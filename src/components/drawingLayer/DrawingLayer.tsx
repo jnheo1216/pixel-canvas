@@ -22,8 +22,9 @@ export default function DrawingLayer({
   const context = canvasRef.current?.getContext('2d', { willReadFrequently: true });
   const rect = canvasRef.current?.getBoundingClientRect();
 
-  /** TODO: 나중에 픽셀 단위가 아니라 행동 단위로 저장 및 undo필요 */
+  /** TODO: 나중에 픽셀 단위가 아니라 행동 단위로 저장 */
   const [behaivior, setBehaivior] = useState<Behavior[]>([]);
+  /** TODO: 나중에 픽셀 단위가 아니라 행동 단위로 저장 */
   const [redo, setRedo] = useState<Behavior[]>([]);
   /** pen on / off */
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
@@ -73,47 +74,19 @@ export default function DrawingLayer({
   const handleUndo = useCallback(() => {
     if (!context) return;
 
-    const behaiviorList = [...behaivior];
-    const undoPixel = behaiviorList.pop();
-    if (undoPixel && undoPixel.beforeColorCode) {
-      context.fillStyle = undoPixel.beforeColorCode;
-      const pixelData = context.getImageData(undoPixel.x, undoPixel.y, 1, 1).data;
-      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-      undoPixel.beforeColorCode = hexColor;
-      context.fillRect(undoPixel.x, undoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
-      setBehaivior(behaiviorList);
-      setRedo([...redo, undoPixel]);
-    } else if (undoPixel && !undoPixel.beforeColorCode) {
-      const pixelData = context.getImageData(undoPixel.x, undoPixel.y, 1, 1).data;
-      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-      undoPixel.beforeColorCode = hexColor;
-      context.clearRect(undoPixel.x, undoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
-      setBehaivior(behaiviorList);
-      setRedo([...redo, undoPixel]);
-    }
+    const { poppedList, popElement } = handlePixelElement(behaivior, context);
+
+    setBehaivior(poppedList);
+    popElement && setRedo([...redo, popElement]);
   }, [behaivior, redo, context]);
 
   const handleRedo = useCallback(() => {
     if (!context) return;
 
-    const redoList = [...redo];
-    const redoPixel = redoList.pop();
-    if (redoPixel && redoPixel.beforeColorCode) {
-      context.fillStyle = redoPixel.beforeColorCode;
-      const pixelData = context.getImageData(redoPixel.x, redoPixel.y, 1, 1).data;
-      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-      redoPixel.beforeColorCode = hexColor;
-      context.fillRect(redoPixel.x, redoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
-      setRedo(redoList);
-      setBehaivior([...behaivior, redoPixel]);
-    } else if (redoPixel && !redoPixel.beforeColorCode) {
-      const pixelData = context.getImageData(redoPixel.x, redoPixel.y, 1, 1).data;
-      const hexColor = pixelData[3] === 0 ? '' : rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-      redoPixel.beforeColorCode = hexColor;
-      context.clearRect(redoPixel.x, redoPixel.y, PIXEL_SIZE, PIXEL_SIZE);
-      setRedo(redoList);
-      setBehaivior([...behaivior, redoPixel]);
-    }
+    const { poppedList, popElement } = handlePixelElement(redo, context);
+
+    setRedo(poppedList);
+    popElement && setBehaivior([...behaivior, popElement]);
   }, [redo, behaivior, context]);
 
   useEffect(() => {
@@ -215,4 +188,25 @@ const stackDrawLog = (
   }
   // TODO: log counts need limit
   setLog((prevItems) => [...prevItems, { x: pixelX, y: pixelY, beforeColorCode: hexColor }]);
+};
+
+/** handle pixel when undo & redo */
+const handlePixelElement = (inputPixelList: Behavior[], context: CanvasRenderingContext2D) => {
+  const pixelList = [...inputPixelList];
+  const element = pixelList.pop();
+  if (element) {
+    context.fillStyle = element.beforeColorCode;
+    const pixelColorData = context.getImageData(element.x, element.y, 1, 1).data;
+    const hexColor =
+      pixelColorData[3] === 0
+        ? ''
+        : rgbToHex(pixelColorData[0], pixelColorData[1], pixelColorData[2]);
+    if (element.beforeColorCode) {
+      context.fillRect(element.x, element.y, PIXEL_SIZE, PIXEL_SIZE);
+    } else {
+      context.clearRect(element.x, element.y, PIXEL_SIZE, PIXEL_SIZE);
+    }
+    element.beforeColorCode = hexColor;
+  }
+  return { poppedList: pixelList, popElement: element };
 };
