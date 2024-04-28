@@ -118,13 +118,28 @@ export default function DrawingLayer({
         onMouseLeave={handleCanvasPenOff}
         onMouseMove={handleCanvasDrawing}
       ></canvas>
+
+      {/* TODO: 버튼 Canvas.tsx로 위치 변경 고려하기 or 다른 아이디어 */}
       <button
         type="button"
         className={`border ml-2 ${behaivior.length < 1 ? 'text-slate-300' : 'text-black'}`}
         disabled={behaivior.length < 1}
         onClick={handleUndo}
       >
-        Undo
+        <svg
+          className="m-1"
+          width="20px"
+          height="20px"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={behaivior.length < 1 ? '#CECECE' : '#000000'}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="miter"
+        >
+          <polyline points="3 9 21 9 21 20 12 20"></polyline>
+          <polyline points="8 4 3 9 8 14"></polyline>
+        </svg>
       </button>
       <button
         type="button"
@@ -132,7 +147,20 @@ export default function DrawingLayer({
         disabled={redo.length < 1}
         onClick={handleRedo}
       >
-        Redo
+        <svg
+          className="m-1"
+          width="20px"
+          height="20px"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={redo.length < 1 ? '#CECECE' : '#000000'}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="miter"
+        >
+          <polyline points="21 9 3 9 3 20 12 20"></polyline>
+          <polyline points="16 14 21 9 16 4"></polyline>
+        </svg>
       </button>
     </div>
   );
